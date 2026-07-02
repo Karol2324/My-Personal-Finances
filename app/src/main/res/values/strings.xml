@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">Mis Finanzas</string>
+
+    <!-- Pantalla principal -->
+    <string name="titulo_principal">Mis Finanzas</string>
+    <string name="lista_vacia">No hay transacciones registradas.\nPulsa + para agregar una.</string>
+    <string name="fab_agregar">Agregar transacción</string>
+    <string name="tipo_ingreso">Ingreso</string>
+    <string name="tipo_gasto">Gasto</string>
+    <string name="editar_transaccion">Editar</string>
+    <string name="eliminar_transaccion">Eliminar</string>
+
+    <!-- Pantalla formulario -->
+    <string name="titulo_nueva_transaccion">Nueva transacción</string>
+    <string name="titulo_editar_transaccion">Editar transacción</string>
+    <string name="hint_concepto">Concepto (ej. Salario, Comida)</string>
+    <string name="hint_monto">Monto</string>
+    <string name="label_tipo">Tipo de movimiento</string>
+    <string name="btn_guardar">Guardar</string>
+
+    <!-- Formato de moneda para el listado -->
+    <string name="formato_monto">$ %.2f</string>
+
+    <!-- Mensajes de validación y confirmación -->
+    <string name="error_concepto_vacio">Ingresa un concepto para la transacción.</string>
+    <string name="error_monto_invalido">Ingresa un monto válido mayor a cero.</string>
+    <string name="confirmar_eliminar">Eliminar transacción</string>
+    <string name="confirmar_eliminar_mensaje">¿Deseas eliminar \"%1$s\"?</string>
+    <string name="btn_cancelar">Cancelar</string>
+    <string name="btn_confirmar">Eliminar</string>
+    <string name="transaccion_eliminada">Transacción eliminada.</string>
+    <string name="transaccion_guardada">Transacción guardada correctamente.</string>
+    <string name="transaccion_actualizada">Transacción actualizada correctamente.</string>
+    <string name="error_guardar">No se pudo guardar la transacción.</string>
+</resources>

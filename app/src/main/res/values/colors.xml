@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Colores semánticos para diferenciar ingresos y gastos en la lista -->
+    <color name="verde_ingreso">#FF2E7D32</color>
+    <color name="verde_ingreso_claro">#FFE8F5E9</color>
+    <color name="rojo_gasto">#FFC62828</color>
+    <color name="rojo_gasto_claro">#FFFFEBEE</color>
+
+    <!-- Colores generales de la interfaz -->
+    <color name="fondo_pantalla">#FFF5F5F5</color>
+    <color name="texto_principal">#FF212121</color>
+    <color name="texto_secundario">#FF757575</color>
+    <color name="borde_tarjeta">#FFE0E0E0</color>
+</resources>
