@@ -1,53 +1,36 @@
 package com.example.mypersonalfinances.model;
 
-/**
- * Modelo de datos que representa una transacción financiera.
- * Corresponde a un registro de la tabla 'transacciones' en SQLite.
- */
 public class Transaccion {
 
-    /** Identificador único generado automáticamente por la base de datos. */
-    private int id;
-
-    /** Descripción de la transacción (ej. "Salario", "Supermercado"). */
+    private String id; // ID de documento Firestore (String)
     private String concepto;
-
-    /** Cantidad de dinero asociada a la transacción. */
     private double monto;
+    private String tipo; // "Ingreso" o "Gasto"
 
-    /** Tipo de movimiento: "Ingreso" o "Gasto". */
-    private String tipo;
-
-    /**
-     * Constructor vacío requerido al reconstruir objetos desde un Cursor de SQLite.
-     */
+    // Constructor vacío obligatorio para Firestore
     public Transaccion() {
     }
 
-    /**
-     * Constructor para crear una transacción nueva (sin id, se asigna al insertar).
-     */
+    // Constructor para crear nuevas transacciones
     public Transaccion(String concepto, double monto, String tipo) {
         this.concepto = concepto;
         this.monto = monto;
         this.tipo = tipo;
     }
 
-    /**
-     * Constructor completo usado al leer o actualizar registros existentes.
-     */
-    public Transaccion(int id, String concepto, double monto, String tipo) {
+    // Constructor completo
+    public Transaccion(String id, String concepto, double monto, String tipo) {
         this.id = id;
         this.concepto = concepto;
         this.monto = monto;
         this.tipo = tipo;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -75,13 +58,11 @@ public class Transaccion {
         this.tipo = tipo;
     }
 
-    /** Indica si la transacción es un ingreso de dinero. */
     public boolean esIngreso() {
-        return "Ingreso".equals(tipo);
+        return "Ingreso".equalsIgnoreCase(tipo);
     }
 
-    /** Indica si la transacción es un gasto. */
     public boolean esGasto() {
-        return "Gasto".equals(tipo);
+        return "Gasto".equalsIgnoreCase(tipo);
     }
 }

@@ -1,30 +1,26 @@
 package com.example.mypersonalfinances;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.text.TextUtils;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.mypersonalfinances.database.ConexionSQLiteHelper;
 import com.example.mypersonalfinances.databinding.ActivityFormularioBinding;
-import com.example.mypersonalfinances.model.Transaccion;
+import com.google.firebase.firestore.FirebaseFirestore;
 
-/**
- * Pantalla de formulario para registrar o editar una transacción.
- * Ejecuta INSERT (modo nuevo) o UPDATE (modo edición) en SQLite.
- */
+import java.util.HashMap;
+import java.util.Map;
+
 public class FormularioActivity extends AppCompatActivity {
 
-    /** Clave del Intent para recibir el id de la transacción a editar. */
-    public static final String EXTRA_ID_TRANSACCION = "extra_id_transaccion";
-
     private ActivityFormularioBinding binding;
-    private ConexionSQLiteHelper conexionHelper;
+    private FirebaseFirestore db;
 
-    /** true = UPDATE, false = INSERT. */
-    private boolean modoEdicion;
-    private int idTransaccion = -1;
+    private String transaccionId = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,114 +29,177 @@ public class FormularioActivity extends AppCompatActivity {
         binding = ActivityFormularioBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        conexionHelper = new ConexionSQLiteHelper(this);
+        db = FirebaseFirestore.getInstance();
 
-        leerModoFormulario();
+        leerDatosIntent();
         configurarToolbar();
-        configurarBotonGuardar();
+        configurarValidacionesTiempoReal();
+        configurarBotones();
+    }
 
-        // Si llega un id válido, precarga los datos en los campos (UPDATE)
-        if (modoEdicion) {
-            cargarTransaccionExistente();
+    private void leerDatosIntent() {
+        if (getIntent().hasExtra("id")) {
+            transaccionId = getIntent().getStringExtra("id");
+            binding.etConcepto.setText(getIntent().getStringExtra("concepto"));
+            binding.etMonto.setText(String.valueOf(getIntent().getDoubleExtra("monto", 0.0)));
+
+            String tipo = getIntent().getStringExtra("tipo");
+            if ("GASTO".equalsIgnoreCase(tipo) || "Gasto".equalsIgnoreCase(tipo)) {
+                binding.rbGasto.setChecked(true);
+            } else {
+                binding.rbIngreso.setChecked(true);
+            }
+
+            binding.btnGuardar.setText("ACTUALIZAR TRANSACCIÓN");
+            binding.btnEliminar.setVisibility(View.VISIBLE);
         }
     }
 
-    /**
-     * Determina si el formulario abre en modo creación o edición
-     * según el extra enviado desde MainActivity.
-     */
-    private void leerModoFormulario() {
-        idTransaccion = getIntent().getIntExtra(EXTRA_ID_TRANSACCION, -1);
-        modoEdicion = idTransaccion != -1;
-    }
-
-    /** Configura el título y el botón atrás de la toolbar. */
     private void configurarToolbar() {
-        int titulo = modoEdicion
+        int titulo = (transaccionId != null)
                 ? R.string.titulo_editar_transaccion
                 : R.string.titulo_nueva_transaccion;
         binding.toolbarFormulario.setTitle(titulo);
         binding.toolbarFormulario.setNavigationOnClickListener(v -> finish());
     }
 
-    /** READ: obtiene la transacción por id y rellena los EditTexts. */
-    private void cargarTransaccionExistente() {
-        Transaccion transaccion = conexionHelper.obtenerTransaccionPorId(idTransaccion);
+    private void configurarValidacionesTiempoReal() {
 
-        if (transaccion == null) {
-            Toast.makeText(this, R.string.error_guardar, Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
+        binding.etConcepto.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
-        binding.etConcepto.setText(transaccion.getConcepto());
-        binding.etMonto.setText(String.valueOf(transaccion.getMonto()));
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().trim().length() < 3) {
+                    binding.layoutConcepto.setError("Ingrese al menos 3 caracteres");
+                } else {
+                    binding.layoutConcepto.setErrorEnabled(false);
+                }
+            }
 
-        if (transaccion.esIngreso()) {
-            binding.rbIngreso.setChecked(true);
-        } else {
-            binding.rbGasto.setChecked(true);
-        }
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+
+        binding.etMonto.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().trim().isEmpty()) {
+                    binding.layoutMonto.setError("El monto es requerido");
+                } else try {
+                    double valor = Double.parseDouble(s.toString().trim().replace(",", "."));
+                    if (valor <= 0) {
+                        binding.layoutMonto.setError("El monto debe ser mayor a 0");
+                    } else {
+                        binding.layoutMonto.setErrorEnabled(false);
+                    }
+                } catch (NumberFormatException e) {
+                    binding.layoutMonto.setError("Monto inválido");
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
     }
 
-    /** Valida los campos y ejecuta INSERT o UPDATE según el modo. */
-    private void configurarBotonGuardar() {
-        binding.btnGuardar.setOnClickListener(v -> guardarTransaccion());
+    private void configurarBotones() {
+        binding.btnGuardar.setOnClickListener(v -> {
+            if (esFormularioValido()) {
+                guardarEnFirestore();
+            }
+        });
+
+        binding.btnEliminar.setOnClickListener(v -> eliminarDeFirestore());
     }
 
-    private void guardarTransaccion() {
-        // Limpiar errores previos de validación
-        binding.layoutConcepto.setError(null);
-        binding.layoutMonto.setError(null);
-
+    private boolean esFormularioValido() {
+        boolean valido = true;
         String concepto = binding.etConcepto.getText().toString().trim();
         String textoMonto = binding.etMonto.getText().toString().trim();
 
-        // Validación: concepto obligatorio
-        if (TextUtils.isEmpty(concepto)) {
-            binding.layoutConcepto.setError(getString(R.string.error_concepto_vacio));
-            binding.etConcepto.requestFocus();
-            return;
+        if (TextUtils.isEmpty(concepto) || concepto.length() < 3) {
+            binding.layoutConcepto.setError("Ingrese un concepto válido");
+            valido = false;
         }
 
-        // Validación: monto numérico positivo
-        double monto;
-        try {
-            monto = Double.parseDouble(textoMonto.replace(",", "."));
-            if (monto <= 0) {
-                throw new NumberFormatException();
+        if (TextUtils.isEmpty(textoMonto)) {
+            binding.layoutMonto.setError("Ingrese un monto");
+            valido = false;
+        } else {
+            try {
+                double monto = Double.parseDouble(textoMonto.replace(",", "."));
+                if (monto <= 0) {
+                    binding.layoutMonto.setError("El monto debe ser mayor a 0");
+                    valido = false;
+                }
+            } catch (Exception e) {
+                binding.layoutMonto.setError("Monto no válido");
+                valido = false;
             }
-        } catch (NumberFormatException e) {
-            binding.layoutMonto.setError(getString(R.string.error_monto_invalido));
-            binding.etMonto.requestFocus();
-            return;
         }
+        return valido;
+    }
 
-        // Tipo según el RadioButton seleccionado
-        String tipo = binding.rbIngreso.isChecked()
-                ? getString(R.string.tipo_ingreso)
-                : getString(R.string.tipo_gasto);
+    private void guardarEnFirestore() {
+        String concepto = binding.etConcepto.getText().toString().trim();
+        double monto = Double.parseDouble(binding.etMonto.getText().toString().trim().replace(",", "."));
+        String tipo = binding.rbIngreso.isChecked() ? "Ingreso" : "Gasto";
 
-        Transaccion transaccion = new Transaccion(concepto, monto, tipo);
-        boolean operacionExitosa;
 
-        if (modoEdicion) {
-            // UPDATE: se requiere el id del registro existente
-            transaccion.setId(idTransaccion);
-            operacionExitosa = conexionHelper.actualizarTransaccion(transaccion) > 0;
+        binding.btnGuardar.setEnabled(false);
+        binding.btnEliminar.setEnabled(false);
+        binding.pbCargaFormulario.setVisibility(View.VISIBLE);
+
+        Map<String, Object> transaccionMap = new HashMap<>();
+        transaccionMap.put("concepto", concepto);
+        transaccionMap.put("monto", monto);
+        transaccionMap.put("tipo", tipo);
+
+        if (transaccionId == null) {
+
+            db.collection("transacciones").add(transaccionMap)
+                    .addOnSuccessListener(documentReference -> {
+                        Toast.makeText(this, R.string.transaccion_guardada, Toast.LENGTH_SHORT).show();
+                        finish();
+                    })
+                    .addOnFailureListener(e -> restaurarEstadoBotones("Error al guardar: " + e.getMessage()));
         } else {
-            // CREATE: insertar nuevo registro
-            operacionExitosa = conexionHelper.insertarTransaccion(transaccion) != -1;
-        }
 
-        if (operacionExitosa) {
-            int mensaje = modoEdicion
-                    ? R.string.transaccion_actualizada
-                    : R.string.transaccion_guardada;
-            Toast.makeText(this, mensaje, Toast.LENGTH_SHORT).show();
-            finish();
-        } else {
-            Toast.makeText(this, R.string.error_guardar, Toast.LENGTH_SHORT).show();
+            db.collection("transacciones").document(transaccionId).update(transaccionMap)
+                    .addOnSuccessListener(aVoid -> {
+                        Toast.makeText(this, R.string.transaccion_actualizada, Toast.LENGTH_SHORT).show();
+                        finish();
+                    })
+                    .addOnFailureListener(e -> restaurarEstadoBotones("Error al actualizar: " + e.getMessage()));
         }
+    }
+
+    private void eliminarDeFirestore() {
+        if (transaccionId != null) {
+            binding.btnGuardar.setEnabled(false);
+            binding.btnEliminar.setEnabled(false);
+            binding.pbCargaFormulario.setVisibility(View.VISIBLE);
+
+
+            db.collection("transacciones").document(transaccionId).delete()
+                    .addOnSuccessListener(aVoid -> {
+                        Toast.makeText(this, "Transacción eliminada", Toast.LENGTH_SHORT).show();
+                        finish();
+                    })
+                    .addOnFailureListener(e -> restaurarEstadoBotones("Error al eliminar: " + e.getMessage()));
+        }
+    }
+
+    private void restaurarEstadoBotones(String mensaje) {
+        binding.pbCargaFormulario.setVisibility(View.GONE);
+        binding.btnGuardar.setEnabled(true);
+        binding.btnEliminar.setEnabled(true);
+        Toast.makeText(this, mensaje, Toast.LENGTH_SHORT).show();
     }
 }

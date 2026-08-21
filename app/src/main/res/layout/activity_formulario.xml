@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Pantalla de formulario: captura concepto, monto y tipo para insertar o actualizar.
-    ViewBinding generará: ActivityFormularioBinding
--->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -11,7 +7,6 @@
     android:background="@color/fondo_pantalla"
     tools:context=".FormularioActivity">
 
-    <!-- Toolbar con botón atrás para volver a la pantalla principal -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbarFormulario"
         android:layout_width="0dp"
@@ -24,7 +19,6 @@
         app:title="@string/titulo_nueva_transaccion"
         app:titleTextColor="@color/white" />
 
-    <!-- ScrollView permite desplazarse si el teclado ocupa espacio en pantalla -->
     <ScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -46,7 +40,8 @@
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/hint_concepto">
+                android:hint="@string/hint_concepto"
+                app:errorEnabled="true">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etConcepto"
@@ -57,14 +52,15 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Campo: monto numérico con decimales -->
+            <!-- Campo: monto de la transacción -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/layoutMonto"
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="8dp"
                 android:hint="@string/hint_monto"
+                app:errorEnabled="true"
                 app:prefixText="$ ">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -76,11 +72,10 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Selector de tipo: Ingreso o Gasto -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="16dp"
                 android:text="@string/label_tipo"
                 android:textColor="@color/texto_principal"
                 android:textSize="14sp"
@@ -112,13 +107,32 @@
 
             </RadioGroup>
 
-            <!-- Botón que ejecutará insert o update según el modo del formulario -->
+            <ProgressBar
+                android:id="@+id/pbCargaFormulario"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:visibility="gone"
+                android:layout_marginTop="16dp" />
+
+            <!-- Botón Guardar / Actualizar -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnGuardar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
+                android:layout_marginTop="24dp"
                 android:text="@string/btn_guardar"
+                app:cornerRadius="8dp" />
+
+            <!-- Botón Eliminar (solo visible en edición) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnEliminar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="ELIMINAR TRANSACCIÓN"
+                android:visibility="gone"
+                android:backgroundTint="@android:color/holo_red_dark"
                 app:cornerRadius="8dp" />
 
         </LinearLayout>

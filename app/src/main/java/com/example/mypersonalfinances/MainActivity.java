@@ -2,131 +2,114 @@ package com.example.mypersonalfinances;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.example.mypersonalfinances.adapter.TransaccionAdapter;
-import com.example.mypersonalfinances.database.ConexionSQLiteHelper;
 import com.example.mypersonalfinances.databinding.ActivityMainBinding;
 import com.example.mypersonalfinances.model.Transaccion;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.ArrayList;
+import java.util.List;
 
-/**
- * Pantalla principal de "Mis Finanzas".
- * Muestra el listado de transacciones y coordina las operaciones CRUD
- * delegando la persistencia a {@link ConexionSQLiteHelper}.
- */
-public class MainActivity extends AppCompatActivity
-        implements TransaccionAdapter.OnTransaccionClickListener {
+public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
-    private ConexionSQLiteHelper conexionHelper;
+    private FirebaseFirestore db;
+    private ListenerRegistration listenerFirestore;
     private TransaccionAdapter adapter;
+    private final List<Transaccion> listaTransacciones = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // ViewBinding: enlaza las vistas de activity_main.xml sin findViewById
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        EdgeToEdge.enable(this);
-        ViewCompat.setOnApplyWindowInsetsListener(binding.main, (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
-
-        // Instancia única del helper SQLite para toda la Activity
-        conexionHelper = new ConexionSQLiteHelper(this);
+        db = FirebaseFirestore.getInstance();
 
         configurarRecyclerView();
         configurarFab();
+        escucharTransaccionesEnTiempoReal();
     }
 
-    /**
-     * onResume recarga la lista cada vez que volvemos desde FormularioActivity
-     * o tras eliminar un registro, manteniendo la UI sincronizada con SQLite.
-     */
-    @Override
-    protected void onResume() {
-        super.onResume();
-        cargarTransacciones();
-    }
-
-    /** Configura el RecyclerView con su adaptador personalizado. */
     private void configurarRecyclerView() {
-        adapter = new TransaccionAdapter(new ArrayList<>(), this);
+        adapter = new TransaccionAdapter(listaTransacciones);
         binding.recyclerViewTransacciones.setAdapter(adapter);
     }
 
-    /** El FAB abre el formulario en modo creación (sin id). */
     private void configurarFab() {
-        binding.fabAgregar.setOnClickListener(v -> abrirFormularioNuevaTransaccion());
+        binding.fabAgregar.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, FormularioActivity.class);
+            startActivity(intent);
+        });
     }
 
-    /** READ: consulta SQLite y actualiza el RecyclerView. */
-    private void cargarTransacciones() {
-        ArrayList<Transaccion> transacciones = conexionHelper.obtenerTransacciones();
-        adapter.actualizarLista(transacciones);
-        actualizarEstadoListaVacia(transacciones.isEmpty());
+    private void escucharTransaccionesEnTiempoReal() {
+        listenerFirestore = db.collection("transacciones")
+                .addSnapshotListener((snapshots, error) -> {
+                    if (error != null) {
+                        Log.e("Firestore", "Error al escuchar cambios", error);
+                        Toast.makeText(MainActivity.this, "Error de conexión", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    if (snapshots != null) {
+                        listaTransacciones.clear();
+                        double totalIngresos = 0.0;
+                        double totalGastos = 0.0;
+
+                        for (DocumentSnapshot doc : snapshots.getDocuments()) {
+                            // Extraer valores garantizando compatibilidad
+                            String concepto = doc.getString("concepto");
+                            if (concepto == null) concepto = doc.getString("Concepto");
+
+                            Double montoObj = doc.getDouble("monto");
+                            if (montoObj == null) montoObj = doc.getDouble("Monto");
+                            double monto = (montoObj != null) ? montoObj : 0.0;
+
+                            String tipo = doc.getString("tipo");
+                            if (tipo == null) tipo = doc.getString("Tipo");
+
+                            if (concepto != null && tipo != null) {
+                                Transaccion t = new Transaccion(doc.getId(), concepto, monto, tipo);
+                                listaTransacciones.add(t);
+
+                                // Suma de totales en tiempo real
+                                if ("INGRESO".equalsIgnoreCase(tipo)) {
+                                    totalIngresos += monto;
+                                } else if ("GASTO".equalsIgnoreCase(tipo)) {
+                                    totalGastos += monto;
+                                }
+                            }
+                        }
+
+
+                        adapter.notifyDataSetChanged();
+                        actualizarEstadoListaVacia(listaTransacciones.isEmpty());
+                        binding.tvTotalIngresos.setText(String.format("$ %.2f", totalIngresos));
+                        binding.tvTotalGastos.setText(String.format("$ %.2f", totalGastos));
+                    }
+                });
     }
 
-    /** Muestra u oculta el mensaje cuando no hay registros. */
     private void actualizarEstadoListaVacia(boolean estaVacia) {
         binding.tvListaVacia.setVisibility(estaVacia ? View.VISIBLE : View.GONE);
         binding.recyclerViewTransacciones.setVisibility(estaVacia ? View.GONE : View.VISIBLE);
     }
 
-    /** Abre FormularioActivity sin extras para insertar una transacción nueva. */
-    private void abrirFormularioNuevaTransaccion() {
-        Intent intent = new Intent(this, FormularioActivity.class);
-        startActivity(intent);
-    }
-
-    /** Abre FormularioActivity en modo edición pasando el id por Intent. */
-    private void abrirFormularioEdicion(Transaccion transaccion) {
-        Intent intent = new Intent(this, FormularioActivity.class);
-        intent.putExtra(FormularioActivity.EXTRA_ID_TRANSACCION, transaccion.getId());
-        startActivity(intent);
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Callbacks del TransaccionAdapter
-    // ─────────────────────────────────────────────────────────────────────────
-
     @Override
-    public void onEditarClick(Transaccion transaccion) {
-        abrirFormularioEdicion(transaccion);
-    }
-
-    @Override
-    public void onEliminarClick(Transaccion transaccion) {
-        mostrarDialogoConfirmacionEliminar(transaccion);
-    }
-
-    /** DELETE: pide confirmación antes de borrar el registro en SQLite. */
-    private void mostrarDialogoConfirmacionEliminar(Transaccion transaccion) {
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.confirmar_eliminar)
-                .setMessage(getString(R.string.confirmar_eliminar_mensaje, transaccion.getConcepto()))
-                .setPositiveButton(R.string.btn_confirmar, (dialog, which) -> {
-                    int filasEliminadas = conexionHelper.eliminarTransaccion(transaccion.getId());
-                    if (filasEliminadas > 0) {
-                        Toast.makeText(this, R.string.transaccion_eliminada, Toast.LENGTH_SHORT).show();
-                        cargarTransacciones();
-                    }
-                })
-                .setNegativeButton(R.string.btn_cancelar, null)
-                .show();
+    protected void onDestroy() {
+        super.onDestroy();
+        if (listenerFirestore != null) {
+            listenerFirestore.remove();
+        }
     }
 }

@@ -1,4 +1,4 @@
-package com.example.mypersonalfinances.database;
+/**package com.example.mypersonalfinances.database;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -10,28 +10,25 @@ import com.example.mypersonalfinances.model.Transaccion;
 
 import java.util.ArrayList;
 
-/**
- * Gestiona la conexión con SQLite y encapsula las operaciones CRUD
- * sobre la tabla 'transacciones'.
- */
+
 public class ConexionSQLiteHelper extends SQLiteOpenHelper {
 
-    /** Nombre del archivo de base de datos en el dispositivo. */
+    /** Nombre del archivo de base de datos en el dispositivo.
     private static final String NOMBRE_BASE_DATOS = "mis_finanzas.db";
 
-    /** Versión del esquema; incrementar si cambia la estructura de tablas. */
+    /** Versión del esquema; incrementar si cambia la estructura de tablas.
     private static final int VERSION_BASE_DATOS = 1;
 
-    /** Nombre de la tabla principal de la aplicación. */
+    /** Nombre de la tabla principal de la aplicación.
     public static final String TABLA_TRANSACCIONES = "transacciones";
 
-    /** Constantes de columnas: evitan errores de tipeo en consultas SQL. */
+    /** Constantes de columnas: evitan errores de tipeo en consultas SQL.
     public static final String COL_ID = "id";
     public static final String COL_CONCEPTO = "concepto";
     public static final String COL_MONTO = "monto";
     public static final String COL_TIPO = "tipo";
 
-    /** Sentencia DDL para crear la tabla al instalar la app por primera vez. */
+    /** Sentencia DDL para crear la tabla al instalar la app por primera vez.
     private static final String SQL_CREAR_TABLA =
             "CREATE TABLE " + TABLA_TRANSACCIONES + " (" +
                     COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -46,7 +43,7 @@ public class ConexionSQLiteHelper extends SQLiteOpenHelper {
 
     /**
      * Se ejecuta una sola vez cuando la base de datos no existe aún.
-     */
+
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(SQL_CREAR_TABLA);
@@ -55,7 +52,7 @@ public class ConexionSQLiteHelper extends SQLiteOpenHelper {
     /**
      * Se ejecuta si VERSION_BASE_DATOS aumenta (migraciones futuras).
      * Por ahora recrea la tabla desde cero.
-     */
+
     @Override
     public void onUpgrade(SQLiteDatabase db, int versionAnterior, int versionNueva) {
         db.execSQL("DROP TABLE IF EXISTS " + TABLA_TRANSACCIONES);
@@ -71,7 +68,7 @@ public class ConexionSQLiteHelper extends SQLiteOpenHelper {
      *
      * @param transaccion Objeto con concepto, monto y tipo (el id se genera solo).
      * @return El id autogenerado, o -1 si la inserción falló.
-     */
+
     public long insertarTransaccion(Transaccion transaccion) {
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -94,7 +91,7 @@ public class ConexionSQLiteHelper extends SQLiteOpenHelper {
      * Lee todas las transacciones ordenadas por id descendente (más recientes primero).
      *
      * @return Lista en memoria con todos los registros de la tabla.
-     */
+
     public ArrayList<Transaccion> obtenerTransacciones() {
         ArrayList<Transaccion> listaTransacciones = new ArrayList<>();
 
@@ -122,7 +119,7 @@ public class ConexionSQLiteHelper extends SQLiteOpenHelper {
      *
      * @param id Identificador de la transacción.
      * @return La transacción encontrada, o null si no existe.
-     */
+
     public Transaccion obtenerTransaccionPorId(int id) {
         SQLiteDatabase db = this.getReadableDatabase();
 
@@ -156,7 +153,7 @@ public class ConexionSQLiteHelper extends SQLiteOpenHelper {
      *
      * @param transaccion Objeto con id y datos modificados.
      * @return Número de filas afectadas (1 si tuvo éxito, 0 si no se encontró).
-     */
+
     public int actualizarTransaccion(Transaccion transaccion) {
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -186,7 +183,7 @@ public class ConexionSQLiteHelper extends SQLiteOpenHelper {
      *
      * @param id Identificador del registro a eliminar.
      * @return Número de filas eliminadas (1 si tuvo éxito, 0 si no existía).
-     */
+
     public int eliminarTransaccion(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -214,3 +211,4 @@ public class ConexionSQLiteHelper extends SQLiteOpenHelper {
         return new Transaccion(id, concepto, monto, tipo);
     }
 }
+*/
