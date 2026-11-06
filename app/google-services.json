@@ -12,7 +12,12 @@
           "package_name": "com.example.mypersonalfinances"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "779458458638-ncsn5kr1mctq1ttgk0mos0ssin7uf1ct.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBgjzPt0ULck9iR8yBli-_WMBs6ZNaXg9I"
@@ -20,7 +25,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "779458458638-ncsn5kr1mctq1ttgk0mos0ssin7uf1ct.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

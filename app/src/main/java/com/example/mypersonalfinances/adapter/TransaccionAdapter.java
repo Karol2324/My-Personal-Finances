@@ -6,11 +6,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.mypersonalfinances.FormularioActivity;
 import com.example.mypersonalfinances.R;
 import com.example.mypersonalfinances.model.Transaccion;
@@ -49,6 +52,21 @@ public class TransaccionAdapter extends RecyclerView.Adapter<TransaccionAdapter.
             holder.tvMonto.setTextColor(Color.parseColor("#F44336"));
         }
 
+        // Renderizado eficiente con Glide (con placeholder y prevención de bug de reciclaje)
+        if (t.getUrlEvidencia() != null && !t.getUrlEvidencia().trim().isEmpty()) {
+            Glide.with(holder.itemView.getContext())
+                    .load(t.getUrlEvidencia())
+                    .placeholder(android.R.drawable.ic_menu_gallery)
+                    .error(android.R.drawable.stat_notify_error)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .centerCrop()
+                    .into(holder.ivFotoEvidencia);
+        } else {
+            // Limpia la vista si el ítem reciclado no tiene imagen
+            Glide.with(holder.itemView.getContext()).clear(holder.ivFotoEvidencia);
+            holder.ivFotoEvidencia.setImageResource(android.R.drawable.ic_menu_gallery);
+        }
+
         // Clic en el botón Editar o en toda la tarjeta
         View.OnClickListener abrirEdicion = v -> {
             Intent intent = new Intent(v.getContext(), FormularioActivity.class);
@@ -56,13 +74,12 @@ public class TransaccionAdapter extends RecyclerView.Adapter<TransaccionAdapter.
             intent.putExtra("concepto", t.getConcepto());
             intent.putExtra("monto", t.getMonto());
             intent.putExtra("tipo", t.getTipo());
+            intent.putExtra("urlEvidencia", t.getUrlEvidencia());
             v.getContext().startActivity(intent);
         };
 
         holder.itemView.setOnClickListener(abrirEdicion);
         holder.btnEditar.setOnClickListener(abrirEdicion);
-
-        // Clic en el botón Eliminar (Abre el formulario directo a confirmar borrado)
         holder.btnEliminar.setOnClickListener(abrirEdicion);
     }
 
@@ -75,6 +92,7 @@ public class TransaccionAdapter extends RecyclerView.Adapter<TransaccionAdapter.
         View viewIndicador;
         TextView tvConcepto, tvTipo, tvMonto;
         ImageButton btnEditar, btnEliminar;
+        ImageView ivFotoEvidencia;
 
         public TransaccionViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -84,6 +102,7 @@ public class TransaccionAdapter extends RecyclerView.Adapter<TransaccionAdapter.
             tvMonto = itemView.findViewById(R.id.tvMonto);
             btnEditar = itemView.findViewById(R.id.btnEditar);
             btnEliminar = itemView.findViewById(R.id.btnEliminar);
+            ivFotoEvidencia = itemView.findViewById(R.id.ivFotoEvidencia);
         }
     }
 }

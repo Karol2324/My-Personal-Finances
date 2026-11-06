@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="@color/fondo_pantalla">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="24dp">
+
+        <ImageView
+            android:id="@+id/imgLogoLogin"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_marginTop="16dp"
+            android:src="@android:drawable/ic_menu_compass"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tvTituloLogin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Mis Finanzas"
+            android:textColor="@color/texto_principal"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/imgLogoLogin" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/layoutLoginCorreo"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="Correo Electrónico"
+            app:layout_constraintTop_toBottomOf="@id/tvTituloLogin">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etLoginCorreo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textEmailAddress" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/layoutLoginPassword"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Contraseña"
+            app:endIconMode="password_toggle"
+            app:layout_constraintTop_toBottomOf="@id/layoutLoginCorreo">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etLoginPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- 1. Iniciar Sesión Tradicional -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnLogin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:padding="10dp"
+            android:text="INICIAR SESIÓN"
+            app:cornerRadius="8dp"
+            app:layout_constraintTop_toBottomOf="@id/layoutLoginPassword" />
+
+        <!-- 2. Continuar con Google -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGoogleLogin"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:padding="10dp"
+            android:text="Continuar con Google"
+            app:cornerRadius="8dp"
+            app:icon="@android:drawable/ic_menu_compass"
+            app:layout_constraintTop_toBottomOf="@id/btnLogin" />
+
+        <!-- 3. Continuar con Microsoft -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnMicrosoftLogin"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:padding="10dp"
+            android:text="Continuar con Microsoft"
+            app:cornerRadius="8dp"
+            app:icon="@android:drawable/ic_menu_info_details"
+            app:layout_constraintTop_toBottomOf="@id/btnGoogleLogin" />
+
+        <!-- 4. Continuar con Facebook -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnFacebookLogin"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:padding="10dp"
+            android:text="Continuar con Facebook"
+            app:cornerRadius="8dp"
+            app:icon="@android:drawable/ic_menu_share"
+            app:layout_constraintTop_toBottomOf="@id/btnMicrosoftLogin" />
+
+        <!-- 5. Link a Registro -->
+        <TextView
+            android:id="@+id/tvIrRegistro"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:padding="8dp"
+            android:text="¿No tienes cuenta? Regístrate aquí"
+            android:textColor="?attr/colorPrimary"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btnFacebookLogin" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

@@ -11,6 +11,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.mypersonalfinances.databinding.ActivityFormularioBinding;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -82,7 +84,6 @@ public class FormularioActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         });
 
-
         binding.etMonto.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -147,13 +148,18 @@ public class FormularioActivity extends AppCompatActivity {
     }
 
     private void guardarEnFirestore() {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(this, "Sesión no válida", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String uid = currentUser.getUid();
         String concepto = binding.etConcepto.getText().toString().trim();
         double monto = Double.parseDouble(binding.etMonto.getText().toString().trim().replace(",", "."));
         String tipo = binding.rbIngreso.isChecked() ? "Ingreso" : "Gasto";
 
-
         binding.btnGuardar.setEnabled(false);
-        binding.btnEliminar.setEnabled(false);
         binding.pbCargaFormulario.setVisibility(View.VISIBLE);
 
         Map<String, Object> transaccionMap = new HashMap<>();
@@ -162,18 +168,33 @@ public class FormularioActivity extends AppCompatActivity {
         transaccionMap.put("tipo", tipo);
 
         if (transaccionId == null) {
-
-            db.collection("transacciones").add(transaccionMap)
+            // Crear nueva transacción en Firestore
+            db.collection("usuarios").document(uid)
+                    .collection("transacciones").add(transaccionMap)
                     .addOnSuccessListener(documentReference -> {
+                        // Guardar el ID auto-generado dentro del mismo documento
+                        documentReference.update("id", documentReference.getId());
                         Toast.makeText(this, R.string.transaccion_guardada, Toast.LENGTH_SHORT).show();
+                        NotificacionHelper.emitirNotificacion(
+                                this,
+                                "¡Transacción Registrada!",
+                                "El movimiento financiero se guardó correctamente en la nube."
+                        );
                         finish();
                     })
                     .addOnFailureListener(e -> restaurarEstadoBotones("Error al guardar: " + e.getMessage()));
         } else {
-
-            db.collection("transacciones").document(transaccionId).update(transaccionMap)
+            // Actualizar transacción existente
+            transaccionMap.put("id", transaccionId);
+            db.collection("usuarios").document(uid)
+                    .collection("transacciones").document(transaccionId).update(transaccionMap)
                     .addOnSuccessListener(aVoid -> {
                         Toast.makeText(this, R.string.transaccion_actualizada, Toast.LENGTH_SHORT).show();
+                        NotificacionHelper.emitirNotificacion(
+                                this,
+                                "¡Transacción Actualizada!",
+                                "La actualización se guardó correctamente en la nube."
+                        );
                         finish();
                     })
                     .addOnFailureListener(e -> restaurarEstadoBotones("Error al actualizar: " + e.getMessage()));
@@ -181,13 +202,16 @@ public class FormularioActivity extends AppCompatActivity {
     }
 
     private void eliminarDeFirestore() {
-        if (transaccionId != null) {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (transaccionId != null && currentUser != null) {
+            String uid = currentUser.getUid();
+
             binding.btnGuardar.setEnabled(false);
             binding.btnEliminar.setEnabled(false);
             binding.pbCargaFormulario.setVisibility(View.VISIBLE);
 
-
-            db.collection("transacciones").document(transaccionId).delete()
+            db.collection("usuarios").document(uid)
+                    .collection("transacciones").document(transaccionId).delete()
                     .addOnSuccessListener(aVoid -> {
                         Toast.makeText(this, "Transacción eliminada", Toast.LENGTH_SHORT).show();
                         finish();
@@ -201,5 +225,34 @@ public class FormularioActivity extends AppCompatActivity {
         binding.btnGuardar.setEnabled(true);
         binding.btnEliminar.setEnabled(true);
         Toast.makeText(this, mensaje, Toast.LENGTH_SHORT).show();
+    }
+
+    private void cargarProductoSugeridoDesdeApi(int productoId) {
+        ApiService apiService = RetrofitClient.getApiService();
+
+        // Llamada asíncrona con Retrofit
+        apiService.obtenerProducto(productoId).enqueue(new retrofit2.Callback<ProductoAPI>() {
+            @Override
+            public void onResponse(retrofit2.Call<ProductoAPI> call, retrofit2.Response<ProductoAPI> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    ProductoAPI producto = response.body();
+
+                    // Ejemplo: Llenar automáticamente los campos del formulario con los datos de la API
+                    String conceptoSugerido = producto.getTitle();
+                    double precioSugerido = producto.getPrice();
+
+                    Toast.makeText(FormularioActivity.this,
+                            "API Exito: " + conceptoSugerido + " ($" + precioSugerido + ")",
+                            Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(FormularioActivity.this, "Error en la respuesta de la API", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(retrofit2.Call<ProductoAPI> call, Throwable t) {
+                Toast.makeText(FormularioActivity.this, "Fallo al conectar con API: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

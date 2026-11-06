@@ -2,6 +2,25 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Declaración de visibilidad para Google, Navegador y Facebook -->
+    <queries>
+        <package android:name="com.google.android.gms" />
+        <package android:name="com.facebook.katana" />
+
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+
+            <category android:name="android.intent.category.BROWSABLE" />
+
+            <data android:scheme="https" />
+        </intent>
+    </queries>
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -11,8 +30,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MyPersonalFinances">
+
+        <!-- Pantalla de inicio de la App (Login) -->
         <activity
-            android:name=".MainActivity"
+            android:name=".LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -21,11 +42,62 @@
             </intent-filter>
         </activity>
 
-        <!-- Pantalla de formulario para crear o editar transacciones -->
+        <!-- Pantalla de Registro -->
+        <activity
+            android:name=".RegistroActivity"
+            android:exported="false" />
+
+        <!-- Pantalla Principal (Lista de transacciones) -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="false" />
+
+        <!-- Formulario para crear/editar transacciones -->
         <activity
             android:name=".FormularioActivity"
             android:exported="false"
             android:parentActivityName=".MainActivity" />
+
+        <meta-data
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/facebook_app_id" />
+        <meta-data
+            android:name="com.facebook.sdk.ClientToken"
+            android:value="@string/facebook_client_token" />
+
+        <!-- Ubicación -->
+        <activity
+            android:name=".UbicacionActivity"
+            android:exported="false" />
+
+        <!-- Registro de MapaActivity -->
+        <activity
+            android:name=".MapaActivity"
+            android:exported="false" />
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyA3hRmDQXUWZtJgGd3dFlWO1FTJ46k7VWU" />
+
+        <activity
+            android:name=".EvidenciaActivity"
+            android:exported="false" />
+
+        <service
+            android:name=".MiServicioFCM"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <!--Auditoria Admin -->
+        <activity
+            android:name=".AuditoriaActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+
     </application>
 
 </manifest>

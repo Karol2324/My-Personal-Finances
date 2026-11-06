@@ -1,34 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="12dp"
     android:layout_marginVertical="6dp"
-    app:cardBackgroundColor="@color/white"
-    app:cardCornerRadius="8dp"
+    app:cardCornerRadius="12dp"
     app:cardElevation="2dp"
-    app:strokeColor="@color/borde_tarjeta"
-    app:strokeWidth="1dp">
+    app:strokeWidth="0dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="12dp">
 
-
+        <!-- Barra lateral indicadora de tipo (Ingreso/Gasto) -->
         <View
             android:id="@+id/viewIndicadorTipo"
             android:layout_width="4dp"
             android:layout_height="0dp"
-            android:background="@color/verde_ingreso"
+            android:background="#4CAF50"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <!-- Miniatura de la evidencia o comprobante -->
+        <ImageView
+            android:id="@+id/ivFotoEvidencia"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:scaleType="centerCrop"
+            android:src="@android:drawable/ic_menu_gallery"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/viewIndicadorTipo"
+            app:layout_constraintTop_toTopOf="parent" />
 
+        <!-- Título / Concepto de la transacción -->
         <TextView
             android:id="@+id/tvConcepto"
             android:layout_width="0dp"
@@ -37,69 +47,71 @@
             android:layout_marginEnd="8dp"
             android:ellipsize="end"
             android:maxLines="1"
-            android:textColor="@color/texto_principal"
+            android:textColor="#212121"
             android:textSize="16sp"
             android:textStyle="bold"
-            app:layout_constraintEnd_toStartOf="@id/btnEditar"
-            app:layout_constraintStart_toEndOf="@id/viewIndicadorTipo"
+            app:layout_constraintBottom_toTopOf="@id/tvTipo"
+            app:layout_constraintEnd_toStartOf="@id/tvMonto"
+            app:layout_constraintStart_toEndOf="@id/ivFotoEvidencia"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="Supermercado" />
+            tools:text="Salario" />
 
-
+        <!-- Subtítulo / Tipo de movimiento -->
         <TextView
             android:id="@+id/tvTipo"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
-            android:layout_marginTop="4dp"
-            android:paddingHorizontal="8dp"
-            android:paddingVertical="2dp"
-            android:textSize="12sp"
-            app:layout_constraintStart_toEndOf="@id/viewIndicadorTipo"
+            android:layout_marginEnd="8dp"
+            android:textColor="#757575"
+            android:textSize="13sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/tvMonto"
+            app:layout_constraintStart_toEndOf="@id/ivFotoEvidencia"
             app:layout_constraintTop_toBottomOf="@id/tvConcepto"
-            tools:background="@drawable/bg_badge_gasto"
-            tools:text="Gasto"
-            tools:textColor="@color/rojo_gasto" />
+            tools:text="Ingreso" />
 
-
+        <!-- Monto económico -->
         <TextView
             android:id="@+id/tvMonto"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/rojo_gasto"
-            android:textSize="16sp"
+            android:layout_marginEnd="8dp"
+            android:textColor="#2E7D32"
+            android:textSize="15sp"
             android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/btnEditar"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="$ 45.50" />
+            tools:text="$ 2580000.0" />
 
-
+        <!-- Botón Editar -->
+        <!-- Botón Editar -->
         <ImageButton
             android:id="@+id/btnEditar"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginEnd="6dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/editar_transaccion"
-            android:padding="8dp"
-            android:scaleType="centerInside"
-            android:src="@drawable/ic_edit"
+            android:padding="4dp"
+            android:src="@android:drawable/ic_menu_edit"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/btnEliminar"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="#616161" />
 
-
+        <!-- Botón Eliminar -->
         <ImageButton
             android:id="@+id/btnEliminar"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/eliminar_transaccion"
-            android:padding="8dp"
-            android:scaleType="centerInside"
-            android:src="@drawable/ic_delete"
+            android:padding="4dp"
+            android:src="@android:drawable/ic_menu_delete"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="#D32F2F" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

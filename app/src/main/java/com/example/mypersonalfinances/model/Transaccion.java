@@ -7,6 +7,8 @@ public class Transaccion {
     private double monto;
     private String tipo; // "Ingreso" o "Gasto"
 
+    private String urlEvidencia;
+
     // Constructor vacío obligatorio para Firestore
     public Transaccion() {
     }
@@ -64,5 +66,13 @@ public class Transaccion {
 
     public boolean esGasto() {
         return "Gasto".equalsIgnoreCase(tipo);
+    }
+
+    public String getUrlEvidencia() {
+        return urlEvidencia;
+    }
+
+    public void setUrlEvidencia(String urlEvidencia) {
+        this.urlEvidencia = urlEvidencia;
     }
 }

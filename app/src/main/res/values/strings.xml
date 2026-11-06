@@ -32,4 +32,8 @@
     <string name="transaccion_guardada">Transacción guardada correctamente.</string>
     <string name="transaccion_actualizada">Transacción actualizada correctamente.</string>
     <string name="error_guardar">No se pudo guardar la transacción.</string>
+
+    <string name="facebook_app_id">1598133198660731</string>
+    <string name="fb_login_protocol_scheme">fb1598133198660731</string>
+    <string name="facebook_client_token">62c8046cc153c6828dff9335a89c0deb</string>
 </resources>
